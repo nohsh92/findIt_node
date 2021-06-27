@@ -5,7 +5,6 @@ const multer=require('multer')
 const path= require('path')
 const model = require('./model')
 
-const connectionString = 'mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@finditcluster.b7xew.mongodb.net/test?authSource=admin&replicaSet=atlas-jly7ul-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true'
 const dbusername = process.env.DB_USERNAME
 const dbpassword = process.env.DB_PASSWORD
 const port = process.env.PORT
