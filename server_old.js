@@ -4,6 +4,8 @@ const dotenv = require('dotenv').config();
 const multer=require('multer')
 const path= require('path')
 const model = require('./model')
+var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 
 const connectionString = 'mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@finditcluster.b7xew.mongodb.net/test?authSource=admin&replicaSet=atlas-jly7ul-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true'
 const dbusername = process.env.DB_USERNAME
@@ -12,13 +14,7 @@ const port = process.env.PORT
 
 var jwt = require('jsonwebtoken');
 
-var crypto = require('crypto');
-
-const KEY = "m sfdsafsdfasdfsadfa1!11!)<'SECRET>)Key'!";
-
 const app = express();
-
-// TODO: Use the encryption scheme to save and retrievethe encrypted password to MongoDB
 
 //db
 async function connectDB() {
@@ -65,68 +61,53 @@ var storage = multer.diskStorage({
 })
 
 // signup route api
-app.post('/signup', express.urlencoded(), async (req, res) => {
-  // in a production environment you would ideally add salt and store that in the database as well
-  // or even use bcrypt instead of sha256. No need for external libs with sha256 though
-  const {email, password} = req.body;
-  var encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
-  let user = await User.findOne({email});
-  if(user) {
-    console.error("can't create user " + req.body.email);
-    res.status(409);
-    res.send("An user with that username already exists");
-  } else {
-    console.log("Can create user " + req.body.email);
-    console.log("User submitted password: " + req.body.password);
-    console.log("Encrypted password: " + encryptedPassword);
+app.post('/signup', async (req, res) => {
+    const {email, password} = req.body;
+    console.log(email);
+    console.log(password);
+
+    let user = await User.findOne({email});
+
+    if(user) {
+      return res.json({msg:"Email already taken"});
+    }
+
+    if(user==null) {
+      return res.json({msg:"Null user not permitted"});
+    }
+
     user = new User({
-      email,
-      password,
+        email,
+        password,
     });
     console.log(user)
 
     await user.save();
-    res.status(201);
     var token = jwt.sign({ id: user.id }, "password");
     res.json({token:token});
-    res.send("Success");
-  }
-});
+})
 
   // login route api
-  app.post('/login', express.urlencoded(), async (req, res) => {
-    console.log(req.body.email + " attempted login");
-    const {email, password} = req.body;
-    let user = await User.findOne({email});
-    console.log("")
-    console.log("")
-    console.log("")
-    console.log("email submitted for login is : ", email)
-    console.log("password submitted for login is : ", password)
-    console.log("status of user is ", user)
-    console.log("")
-    console.log("User retrieved from Mongo is: ", user.email)
-    console.log("User retrieved from payload is: ", req.body.email)
-    console.log("")
-    console.log("User retrieved from Mongo is: ", user.password)
-    console.log("User retrieved from payload is: ", req.body.password)
-    console.log("")
-    console.log("")
-    console.log("")
-    var encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
-    if(user.email == req.body.email && user.password == req.body.password) {
-      var payload = {
-        email: req.body.email,
-      };
-      var token = jwt.sign(payload, KEY, {algorithm: 'HS256', expiresIn: "15d"});
-      console.log("Success");
-      res.send(token);
-    } else {
-      console.error("Failure");
-      res.status(401)
-      res.send("There's no user matching that");
-    }
-  });
+app.post('/login', async (req, res) => {
+  const {email, password} = req.body;
+  console.log(email);
+  console.log(password);
+
+  let user = await User.findOne({email});
+  console.log(user);
+
+  if(!user) {
+    return res.json({msg:"no user found with that email"});
+  }
+
+  if(user.password !== password) {
+    return res.json({msg: "Password is not correct"});
+  }
+
+  var token = jwt.sign({ id: user.id }, "password");
+  return res.json({token:token});
+
+})
 
 // upload route api
 var upload = multer({storage: storage})
