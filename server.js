@@ -95,12 +95,13 @@ app.post('/signup', express.urlencoded(), async (req, res) => {
 
   // login route api
   app.post('/login', express.urlencoded(), async (req, res) => {
+    console.log("")
+    console.log("")
+    console.log("") 
     console.log(req.body.email + " attempted login");
     const {email, password} = req.body;
     let user = await User.findOne({email});
-    console.log("")
-    console.log("")
-    console.log("")
+    console.log("") 
     console.log("email submitted for login is : ", email)
     console.log("password submitted for login is : ", password)
     console.log("status of user is ", user)
@@ -110,9 +111,6 @@ app.post('/signup', express.urlencoded(), async (req, res) => {
     console.log("")
     console.log("User retrieved from Mongo is: ", user.password)
     console.log("User retrieved from payload is: ", req.body.password)
-    console.log("")
-    console.log("")
-    console.log("")
     var encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
     if(user.email == req.body.email && user.password == req.body.password) {
       var payload = {
@@ -126,6 +124,9 @@ app.post('/signup', express.urlencoded(), async (req, res) => {
       res.status(401)
       res.send("There's no user matching that");
     }
+    console.log("")
+    console.log("")
+    console.log("")
   });
 
 // upload route api
