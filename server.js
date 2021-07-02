@@ -121,7 +121,7 @@ app.post('/signup', express.urlencoded(), async (req, res) => {
         var payload = {
           email: req.body.email,
         };
-        var token = jwt.sign(payload, KEY, {algorithm: 'HS256', expiresIn: 30});
+        var token = jwt.sign(payload, KEY, {algorithm: 'HS256', expiresIn: 60});
         console.log("Success");
         res.send(token);
       } else {
