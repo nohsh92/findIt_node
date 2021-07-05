@@ -133,6 +133,44 @@ app.post('/signup', express.urlencoded(), async (req, res) => {
       console.log("")
       console.log("")
     }
+  }),
+  app.post('/updatetoken', express.urlencoded(), async (req, res) => {
+    if(req.body.email == null) {
+      console.log("There was a problem updating the token")
+      res.send("Email does not exist for that email address");
+    } 
+    else {
+      console.log("")
+      console.log("")
+      console.log("") 
+      console.log(req.body.email + " attempted to refresh token");
+      const {email, password} = req.body;
+      let user = await User.findOne({email});
+      console.log("") 
+      console.log("email submitted for token refresh is : ", email)
+      console.log("")
+      console.log("User retrieved from Mongo is: ", user.email)
+      console.log("User retrieved from payload is: ", req.body.email)
+      console.log("")
+      console.log("Password retrieved from Mongo is: ", user.password)
+      console.log("Password retrieved from payload is: ", req.body.password)
+      var encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
+      if(user.email == req.body.email && user.password == req.body.password) {
+        var payload = {
+          email: req.body.email,
+        };
+        var token = jwt.sign(payload, KEY, {algorithm: 'HS256', expiresIn: 60});
+        console.log("Token Refresh Success");
+        res.send(token);
+      } else {
+        console.error("Failure to Refresh Token");
+        res.status(401)
+        res.send("Credential Mismatch for Token Refresh");
+      }
+      console.log("")
+      console.log("")
+      console.log("")
+    }
   });
 
 // upload route api
